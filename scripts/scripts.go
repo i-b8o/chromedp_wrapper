@@ -1,6 +1,6 @@
-package chromedp_wrapper
+package scripts
 
-func scriptOpenURL(url string) string {
+func OpenURL(url string) string {
 	return `
 	var error = ''
 	try {
@@ -11,7 +11,7 @@ func scriptOpenURL(url string) string {
 	`
 }
 
-func scriptGetBool(jsBool string) string {
+func GetBool(jsBool string) string {
 	return `
 		try {
 			` + jsBool + `
@@ -19,7 +19,7 @@ func scriptGetBool(jsBool string) string {
 	`
 }
 
-func scriptGetStringsSlice(jsString string) string {
+func GetStringsSlice(jsString string) string {
 	return `
 		var result = [];
 		try {
@@ -30,7 +30,7 @@ func scriptGetStringsSlice(jsString string) string {
 		}
 	`
 }
-func scriptGetString(jsString string) string {
+func GetString(jsString string) string {
 	return `
 		var error = ''
 		try {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/chromedp/chromedp"
+	"github.com/i-b8o/chromedp_wrapper/scripts"
 )
 
 type Chrome struct {
@@ -28,7 +29,7 @@ func (c *Chrome) SetTimeout(timeOut int) {
 
 func openURL(url string, message *string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scriptOpenURL(url), message),
+		chromedp.EvaluateAsDevTools(scripts.OpenURL(url), message),
 	}
 }
 
@@ -70,7 +71,7 @@ func (c *Chrome) WaitReady(ctxt context.Context, selector string) error {
 
 func getString(jsString string, resultString *string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scriptGetString(jsString), resultString),
+		chromedp.EvaluateAsDevTools(scripts.GetString(jsString), resultString),
 	}
 }
 
@@ -82,7 +83,7 @@ func (c *Chrome) GetString(ctxt context.Context, jsString string) (string, error
 
 func getStringsSlice(jsString string, resultSlice *[]string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scriptGetStringsSlice(jsString), resultSlice),
+		chromedp.EvaluateAsDevTools(scripts.GetStringsSlice(jsString), resultSlice),
 	}
 }
 
@@ -94,7 +95,7 @@ func (c *Chrome) GetStringsSlice(ctxt context.Context, jsString string) ([]strin
 
 func getBool(jsBool string, resultBool *bool) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scriptGetBool(jsBool), resultBool),
+		chromedp.EvaluateAsDevTools(scripts.GetBool(jsBool), resultBool),
 	}
 }
 
