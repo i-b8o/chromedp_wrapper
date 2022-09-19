@@ -20,7 +20,7 @@ func Init() (context.Context, context.CancelFunc) {
 }
 
 func InitHeadLess() (context.Context, context.CancelFunc) {
-	opts := []chromedp.ExecAllocatorOption{chromedp.Flag("no-sandbox", true), chromedp.Flag("headless", false)}
+	opts := []chromedp.ExecAllocatorOption{chromedp.Flag("no-sandbox", true), chromedp.Flag("headless", true)}
 	allocContext, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 	return chromedp.NewContext(allocContext)
 }
