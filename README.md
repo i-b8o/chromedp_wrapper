@@ -30,7 +30,7 @@ func main() {
 
 	_ = c.WaitLoaded(ctx)
 
-	results, _ := c.GetStringsSlice(ctx, `Array.prototype.slice.apply( document.getElementsByTagName("h3") ).map((h3)=> h3.innerText)`)
+	results, _ := c.GetStringSlice(ctx, `Array.prototype.slice.apply( document.getElementsByTagName("h3") ).map((h3)=> h3.innerText)`)
 
 	for _, result := range results {
 		fmt.Println(result)
