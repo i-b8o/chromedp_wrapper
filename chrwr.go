@@ -71,7 +71,7 @@ func (c *Chrome) WaitReady(ctxt context.Context, selector string) error {
 
 func getString(jsString string, resultString *string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scripts.GetString(jsString), resultString),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsString), resultString),
 	}
 }
 
@@ -83,7 +83,7 @@ func (c *Chrome) GetString(ctxt context.Context, jsString string) (string, error
 
 func getStringsSlice(jsString string, resultSlice *[]string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scripts.GetStringsSlice(jsString), resultSlice),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsString), resultSlice),
 	}
 }
 
@@ -95,7 +95,7 @@ func (c *Chrome) GetStringsSlice(ctxt context.Context, jsString string) ([]strin
 
 func getBool(jsBool string, resultBool *bool) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scripts.GetBool(jsBool), resultBool),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsBool), resultBool),
 	}
 }
 
@@ -132,7 +132,6 @@ func (c *Chrome) WaitLoaded(ctxt context.Context) error {
 		if n > c.TimeOut {
 			return fmt.Errorf("time is over: %d sec", c.TimeOut)
 		}
-		fmt.Print(".")
 		time.Sleep(1 * time.Second)
 		loaded, err = c.GetBool(ctxt, `document.readyState !== 'ready' && document.readyState !== 'complete'`)
 		if err != nil {

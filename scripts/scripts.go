@@ -11,32 +11,10 @@ func OpenURL(url string) string {
 	`
 }
 
-func GetBool(jsBool string) string {
+func GetValue(js string) string {
 	return `
 		try {
-			` + jsBool + `
+			` + js + `
 		} catch(err) {}
-	`
-}
-
-func GetStringsSlice(jsString string) string {
-	return `
-		var result = [];
-		try {
-			` + jsString + `
-		} catch(err) {
-  			result.push(err)
-			result
-		}
-	`
-}
-func GetString(jsString string) string {
-	return `
-		var error = ''
-		try {
-			` + jsString + `
-		} catch(err) {
-			error + err
-		}
 	`
 }
