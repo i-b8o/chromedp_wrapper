@@ -33,15 +33,16 @@ func (c *Chrome) SetTimeout(timeOut int) {
 	c.TimeOut = timeOut
 }
 
-func openURL(url string, message *string) chromedp.Tasks {
+func openURL(url string) chromedp.Tasks {
+	var message string
 	return chromedp.Tasks{
-		chromedp.EvaluateAsDevTools(scripts.OpenURL(url), message),
+		chromedp.EvaluateAsDevTools(scripts.OpenURL(url), &message),
 	}
 }
 
 func (c *Chrome) OpenURL(ctxt context.Context, url string) error {
-	var message string
-	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, openURL(url, &message)))
+
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, openURL(url)))
 	return err
 }
 
