@@ -40,8 +40,8 @@ func main() {
 
 }
 ```
-headless
+### headless
 
 ```go
-	ctx, cancel := chrwr.InitHeadLess()
+ctx, cancel := chrwr.InitHeadLess()
 ```
