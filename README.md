@@ -40,3 +40,8 @@ func main() {
 
 }
 ```
+headless
+
+```go
+	ctx, cancel := chrwr.InitHeadLess()
+```
