@@ -40,3 +40,12 @@ func main() {
 
 }
 ```
+##### headless
+
+```go
+ctx, cancel := chrwr.InitHeadLess()
+```
+
+## License
+
+This package is available as open source under the terms of the MIT License.
