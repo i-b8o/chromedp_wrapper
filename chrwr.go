@@ -19,6 +19,12 @@ func Init() (context.Context, context.CancelFunc) {
 	return chromedp.NewContext(allocContext)
 }
 
+func InitHeadLess() (context.Context, context.CancelFunc) {
+	opts := []chromedp.ExecAllocatorOption{chromedp.Flag("no-sandbox", true), chromedp.Flag("headless", false)}
+	allocContext, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	return chromedp.NewContext(allocContext)
+}
+
 func NewChromeWrapper() *Chrome {
 	return &Chrome{TimeOut: 60}
 }
