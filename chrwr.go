@@ -88,15 +88,15 @@ func (c *Chrome) GetString(ctxt context.Context, jsString string) (string, error
 	return resultString, err
 }
 
-func getStringsSlice(jsString string, resultSlice *[]string) chromedp.Tasks {
+func getStringSlice(jsString string, resultSlice *[]string) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.EvaluateAsDevTools(scripts.GetValue(jsString), resultSlice),
 	}
 }
 
-func (c *Chrome) GetStringsSlice(ctxt context.Context, jsString string) ([]string, error) {
+func (c *Chrome) GetStringSlice(ctxt context.Context, jsString string) ([]string, error) {
 	var stringSlice []string
-	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, getStringsSlice(jsString, &stringSlice)))
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, getStringSlice(jsString, &stringSlice)))
 	return stringSlice, err
 }
 
