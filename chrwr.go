@@ -128,6 +128,14 @@ func (c *Chrome) Click(ctxt context.Context, selector string) error {
 
 }
 
+func (c *Chrome) CurrentLocation(ctxt context.Context) string {
+	location, err := c.GetString(ctxt, "window.location.href;")
+	if err != nil {
+		return ""
+	}
+	return location
+}
+
 func (c *Chrome) WaitLoaded(ctxt context.Context) error {
 	var loaded bool
 	loaded, err := c.GetBool(ctxt, `document.readyState !== 'ready' && document.readyState !== 'complete'`)
