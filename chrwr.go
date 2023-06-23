@@ -1,195 +1,158 @@
 package chromedp_wrapper
 
 import (
-	"bufio"
 	"context"
-
-	"log"
-	"os"
-
+	"fmt"
 	"time"
 
 	"github.com/chromedp/chromedp"
-)
-
-const (
-	DefaultTimeout = 60 * time.Second
+	"github.com/i-b8o/chromedp_wrapper/scripts"
 )
 
 type Chrome struct {
-	Timeout time.Duration
-	Logger  *log.Logger
+	TimeOut int
+}
+
+func Init() (context.Context, context.CancelFunc) {
+	opts := []chromedp.ExecAllocatorOption{chromedp.Flag("no-sandbox", true)}
+	allocContext, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	return chromedp.NewContext(allocContext)
+}
+
+func InitHeadLess() (context.Context, context.CancelFunc) {
+	opts := []chromedp.ExecAllocatorOption{chromedp.Flag("no-sandbox", true), chromedp.Flag("headless", true)}
+	allocContext, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+	return chromedp.NewContext(allocContext)
 }
 
 func NewChromeWrapper() *Chrome {
-	return &Chrome{
-		Timeout: DefaultTimeout,
-		Logger:  log.New(os.Stderr, "", log.LstdFlags),
-	}
+	return &Chrome{TimeOut: 60}
 }
 
-func (c *Chrome) SetTimeout(timeout time.Duration) {
-	c.Timeout = timeout
-}
-
-func (c *Chrome) SetLogger(logger *log.Logger) {
-	c.Logger = logger
-}
-
-func (c *Chrome) OpenURL(ctx context.Context, url string) error {
-	if _, err := os.Stat(url); err == nil {
-		file, err := os.Open(url)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			if err := c.openURL(ctx, scanner.Text()); err != nil {
-				return err
-			}
-		}
-		return scanner.Err()
-	}
-	return c.openURL(ctx, url)
-}
-
-func (c *Chrome) openURL(ctx context.Context, url string) error {
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	c.Logger.Printf("Opening URL: %s", url)
-	err := chromedp.Run(ctx, RunWithTimeout(openURL(url), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Error opening URL %s: %v", url, err)
-		return err
-	}
-	return nil
-}
-
-func (c *Chrome) WaitVisible(ctx context.Context, selector string) error {
-	c.Logger.Printf("Waiting for element to be visible: %s", selector)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(waitVisible(selector), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Element never became visible: %s", selector)
-		return err
-	}
-	return nil
-}
-
-func (c *Chrome) WaitReady(ctx context.Context, selector string) error {
-	c.Logger.Printf("Waiting for element to be ready: %s", selector)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(waitReady(selector), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Element never became ready: %s", selector)
-		return err
-	}
-	return nil
-}
-
-func (c *Chrome) GetString(ctx context.Context, jsString string) (string, error) {
-	var resultString string
-	c.Logger.Printf("Getting string value: %s", jsString)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(getString(jsString, &resultString), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Error getting string value: %v", err)
-		return "", err
-	}
-	return resultString, nil
-}
-
-func (c *Chrome) GetStringSlice(ctx context.Context, jsString string) ([]string, error) {
-	var stringSlice []string
-	c.Logger.Printf("Getting string slice value: %s", jsString)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(getStringSlice(jsString, &stringSlice), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Error getting string slice value: %v", err)
-		return nil, err
-	}
-	return stringSlice, nil
-}
-
-func (c *Chrome) GetBool(ctx context.Context, jsBool string) (bool, error) {
-	var resultBool bool
-	c.Logger.Printf("Getting boolean value: %s", jsBool)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(getBool(jsBool, &resultBool), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Error getting boolean value: %v", err)
-		return false, err
-	}
-	return resultBool, nil
-}
-
-func (c *Chrome) Click(ctx context.Context, selector string) error {
-	if err := c.WaitVisible(ctx, selector); err != nil {
-		return err
-	}
-	c.Logger.Printf("Clicking element: %s", selector)
-	ctx, cancel := context.WithTimeout(ctx, c.Timeout)
-	defer cancel()
-	err := chromedp.Run(ctx, RunWithTimeout(click(selector), c.Timeout))
-	if err != nil {
-		c.Logger.Printf("Error clicking element: %v", err)
-		return err
-	}
-	return nil
-}
-
-func RunWithTimeout(tasks chromedp.Tasks, timeout time.Duration) chromedp.ActionFunc {
-	return func(ctx context.Context) error {
-		ctx, cancel := context.WithTimeout(ctx, timeout)
-		defer cancel()
-		return tasks.Do(ctx)
-	}
+func (c *Chrome) SetTimeout(timeOut int) {
+	c.TimeOut = timeOut
 }
 
 func openURL(url string) chromedp.Tasks {
+	var message string
 	return chromedp.Tasks{
-		chromedp.Navigate(url),
+		chromedp.EvaluateAsDevTools(scripts.OpenURL(url), &message),
+	}
+}
+
+func (c *Chrome) OpenURL(ctxt context.Context, url string) error {
+
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, openURL(url)))
+	return err
+}
+
+func RunWithTimeOut(ctx *context.Context, timeout time.Duration, tasks chromedp.Tasks) chromedp.ActionFunc {
+	return func(ctx context.Context) error {
+		timeoutContext, cancel := context.WithTimeout(ctx, timeout*time.Second)
+		defer cancel()
+		return tasks.Do(timeoutContext)
 	}
 }
 
 func waitVisible(selector string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.WaitVisible(selector),
+		chromedp.WaitVisible(selector, chromedp.ByQuery),
 	}
+}
+
+func (c *Chrome) WaitVisible(ctxt context.Context, selector string) error {
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, waitVisible(selector)))
+	return err
 }
 
 func waitReady(selector string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.WaitReady(selector),
+		chromedp.WaitReady(selector, chromedp.ByQuery),
 	}
 }
 
-func getString(jsString string, result *string) chromedp.Tasks {
+func (c *Chrome) WaitReady(ctxt context.Context, selector string) error {
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, waitReady(selector)))
+	return err
+}
+
+func getString(jsString string, resultString *string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.Evaluate(jsString, result),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsString), resultString),
 	}
 }
 
-func getStringSlice(jsString string, result *[]string) chromedp.Tasks {
+func (c *Chrome) GetString(ctxt context.Context, jsString string) (string, error) {
+	var resultString string
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, getString(jsString, &resultString)))
+	return resultString, err
+}
+
+func getStringSlice(jsString string, resultSlice *[]string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.Evaluate(jsString, result),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsString), resultSlice),
 	}
 }
 
-func getBool(jsBool string, result *bool) chromedp.Tasks {
+func (c *Chrome) GetStringSlice(ctxt context.Context, jsString string) ([]string, error) {
+	var stringSlice []string
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, getStringSlice(jsString, &stringSlice)))
+	return stringSlice, err
+}
+
+func getBool(jsBool string, resultBool *bool) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.Evaluate(jsBool, result),
+		chromedp.EvaluateAsDevTools(scripts.GetValue(jsBool), resultBool),
 	}
+}
+
+func (c *Chrome) GetBool(ctxt context.Context, jsBool string) (bool, error) {
+	var resultBool bool
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, getBool(jsBool, &resultBool)))
+	return resultBool, err
 }
 
 func click(selector string) chromedp.Tasks {
 	return chromedp.Tasks{
-		chromedp.Click(selector),
+		chromedp.Sleep(1 * time.Second),
+		chromedp.Click(selector, chromedp.ByQuery),
 	}
+}
+
+func (c *Chrome) Click(ctxt context.Context, selector string) error {
+	err := chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, waitVisible(selector)))
+	if err != nil {
+		return err
+	}
+	return chromedp.Run(ctxt, RunWithTimeOut(&ctxt, 60, click(selector)))
+
+}
+
+func (c *Chrome) CurrentLocation(ctxt context.Context) string {
+	location, err := c.GetString(ctxt, "window.location.href;")
+	if err != nil {
+		return ""
+	}
+	return location
+}
+
+func (c *Chrome) WaitLoaded(ctxt context.Context) error {
+	var loaded bool
+	loaded, err := c.GetBool(ctxt, `document.readyState !== 'ready' && document.readyState !== 'complete'`)
+	if err != nil {
+		return err
+	}
+	n := 0
+	for loaded {
+		if n > c.TimeOut {
+			return fmt.Errorf("time is over: %d sec", c.TimeOut)
+		}
+		time.Sleep(1 * time.Second)
+		loaded, err = c.GetBool(ctxt, `document.readyState !== 'ready' && document.readyState !== 'complete'`)
+		if err != nil {
+			return err
+		}
+		n++
+	}
+	return nil
 }
