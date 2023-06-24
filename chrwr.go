@@ -156,3 +156,31 @@ func (c *Chrome) WaitLoaded(ctxt context.Context) error {
 	}
 	return nil
 }
+
+
+func (c *Chrome) ScrollDown(ctxt context.Context) error {
+    var height int64
+    for {
+        err := chromedp.Run(ctxt, chromedp.Evaluate(`Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, document.documentElement.clientHeight)`, &height))
+        if err != nil {
+            return err
+        }
+        err = chromedp.Run(ctxt, chromedp.ActionFunc(func(ctx context.Context) error {
+            return chromedp.ScrollIntoView(`html`, chromedp.ByQuery).Do(ctx)
+        }))
+        if err != nil {
+            return err
+        }
+        time.Sleep(1 * time.Second)
+        var newHeight int64
+        err = chromedp.Run(ctxt, chromedp.Evaluate(`Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, document.documentElement.clientHeight)`, &newHeight))
+        if err != nil {
+            return err
+        }
+        if newHeight == height {
+            break
+        }
+        height = newHeight
+    }
+    return nil
+}
