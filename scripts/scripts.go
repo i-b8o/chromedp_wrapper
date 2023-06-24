@@ -18,3 +18,12 @@ func GetValue(js string) string {
 		} catch(err) {}
 	`
 }
+
+func ScrollDown() {
+	return `
+	// Get the current scroll position
+	var currentScrollPos = window.pageYOffset;
+	// Scroll down by the height of the viewport
+	window.scrollTo(0, currentScrollPos + window.innerHeight);
+	`
+}
